@@ -1,0 +1,713 @@
+{
+  "schemaVersion": "1.1",
+  "meta": {
+    "id": "fake-sun-tarot-interpretation-engine",
+    "title": "伪日塔罗基础解释引擎",
+    "version": "1.1.0",
+    "language": "zh-CN",
+    "logic": "数字牌由牌组 × 数字 × 状态生成；人物牌由牌组 × 系统角色 × 状态生成；大阿卡纳作为独立的文明结构档案，直接读取原型 × 状态。",
+    "stateDisclaimer": "见日态不等于正确，失锚态也不等于错误。"
+  },
+  "suits": {
+    "fragments": {
+      "id": "fragments",
+      "nameZh": "光像组",
+      "nameEn": "Fragments",
+      "traditional": "权杖｜火",
+      "domain": "方向、意愿、创造、信念与行动",
+      "plainMeaning": "我想把什么变成现实？",
+      "subject": "一个愿景或行动方向",
+      "coreQuestion": "是什么让你愿意抬头？",
+      "excess": "愿景过强，证据与落地不足",
+      "absence": "缺少方向、想象或主动性"
+    },
+    "rings": {
+      "id": "rings",
+      "nameZh": "同步组",
+      "nameEn": "Rings",
+      "traditional": "圣杯｜水",
+      "domain": "情感、关系、归属与共识",
+      "plainMeaning": "我和谁连接在一起？",
+      "subject": "一段连接或共同感受",
+      "coreQuestion": "你与谁共享同一个太阳？",
+      "excess": "过度追求一致，个人边界变弱",
+      "absence": "缺少回应、归属或情感连接"
+    },
+    "rifts": {
+      "id": "rifts",
+      "nameZh": "裂隙组",
+      "nameEn": "Rifts",
+      "traditional": "宝剑｜风",
+      "domain": "思考、证据、冲突、语言与真相",
+      "plainMeaning": "我看见了什么问题？",
+      "subject": "一种判断或原有解释",
+      "coreQuestion": "哪一道裂缝正在迫使你重新判断？",
+      "excess": "分析与怀疑过载，难以继续生活和行动",
+      "absence": "缺少辨别、证据或必要的质疑"
+    },
+    "vessels": {
+      "id": "vessels",
+      "nameZh": "载体组",
+      "nameEn": "Vessels",
+      "traditional": "星币｜土",
+      "domain": "身体、资源、劳动与现实条件",
+      "plainMeaning": "这件事实际上由什么支撑？",
+      "subject": "一项资源或现实基础",
+      "coreQuestion": "谁在用身体和资源支付这束光？",
+      "excess": "现实压力压倒了意义、关系与想象",
+      "absence": "缺少承载条件、资源评估或身体意识"
+    }
+  },
+  "ranks": {
+    "ace": {
+      "value": 1,
+      "label": "Ace",
+      "stageZh": "出现",
+      "systemTerm": "源点",
+      "plainMeaning": "某种东西第一次出现",
+      "coreQuestion": "什么开始了？",
+      "stageSentence": "{subject}第一次清晰出现，正在要求回应。",
+      "sunward": "新力量清晰出现，并获得回应的可能",
+      "unanchored": "只有冲动或迹象，却缺少方向与承载条件"
+    },
+    "two": {
+      "value": 2,
+      "label": "Two",
+      "stageZh": "分化",
+      "systemTerm": "分轨",
+      "plainMeaning": "一个变成两个，需要比较或协调",
+      "coreQuestion": "两边是什么关系？",
+      "stageSentence": "{subject}出现了第二个参照，需要辨认差异并协调两边。",
+      "sunward": "看见差异，并建立有效协调",
+      "unanchored": "犹豫、撕裂，或强迫两边完全一致"
+    },
+    "three": {
+      "value": 3,
+      "label": "Three",
+      "stageZh": "联结",
+      "systemTerm": "成网",
+      "plainMeaning": "两点之外出现第三者、成果或结构",
+      "coreQuestion": "它开始怎样向外发展？",
+      "stageSentence": "{subject}正在向外连接，并开始产生新的成果或结构。",
+      "sunward": "连接产生新的成果与发展空间",
+      "unanchored": "扩散失控、结构混乱或彼此干扰"
+    },
+    "four": {
+      "value": 4,
+      "label": "Four",
+      "stageZh": "稳定",
+      "systemTerm": "定锚",
+      "plainMeaning": "暂时形成边界、秩序和容器",
+      "coreQuestion": "什么被固定下来了？",
+      "stageSentence": "{subject}形成了相对稳定的边界、秩序或容器。",
+      "sunward": "建立必要的稳定、边界与持续条件",
+      "unanchored": "稳定变成封闭、停滞或控制"
+    },
+    "five": {
+      "value": 5,
+      "label": "Five",
+      "stageZh": "扰动",
+      "systemTerm": "失配",
+      "plainMeaning": "原有结构容纳不了现实，矛盾暴露",
+      "coreQuestion": "哪里对不上了？",
+      "stageSentence": "{subject}与现实发生失配，原有结构中的矛盾正在暴露。",
+      "sunward": "矛盾被看见，使修正成为可能",
+      "unanchored": "冲突变成零和竞争与无谓损耗"
+    },
+    "six": {
+      "value": 6,
+      "label": "Six",
+      "stageZh": "重组",
+      "systemTerm": "回流",
+      "plainMeaning": "扰动之后重新分配、连接或移动",
+      "coreQuestion": "怎样恢复流动？",
+      "stageSentence": "{subject}正在扰动后重新连接、移动或分配。",
+      "sunward": "重新建立连接、流动与分配",
+      "unanchored": "表面恢复，实则延续不平等或依赖旧模式"
+    },
+    "seven": {
+      "value": 7,
+      "label": "Seven",
+      "stageZh": "检验",
+      "systemTerm": "校验",
+      "plainMeaning": "面对多种可能，必须辨认并坚持立场",
+      "coreQuestion": "什么正在接受考验？",
+      "stageSentence": "{subject}正在接受检验，当事人必须辨认投影并形成自己的立场。",
+      "sunward": "经受检验后形成自主而清晰的立场",
+      "unanchored": "过度防御、猜疑或沉迷于自身投影"
+    },
+    "eight": {
+      "value": 8,
+      "label": "Eight",
+      "stageZh": "自运行",
+      "systemTerm": "成势",
+      "plainMeaning": "模式获得惯性，开始推动或困住人",
+      "coreQuestion": "什么已经停不下来了？",
+      "stageSentence": "{subject}已经形成惯性，开始反过来推动或限制当事人。",
+      "sunward": "模式形成效率、持续动力与明确行动",
+      "unanchored": "模式失控，人被惯性或闭环推动"
+    },
+    "nine": {
+      "value": 9,
+      "label": "Nine",
+      "stageZh": "个人结果",
+      "systemTerm": "个体闭合",
+      "plainMeaning": "后果集中到一个人身上",
+      "coreQuestion": "我最终得到了或承受了什么？",
+      "stageSentence": "{subject}的后果正在一个人身上集中显现。",
+      "sunward": "个人获得成熟成果，同时看见其代价",
+      "unanchored": "饱和、孤立、焦虑、耗尽或自我封闭"
+    },
+    "ten": {
+      "value": 10,
+      "label": "Ten",
+      "stageZh": "系统结果",
+      "systemTerm": "系统闭合",
+      "plainMeaning": "后果扩展到群体、制度或下一代",
+      "coreQuestion": "它最终创造了怎样的世界？",
+      "stageSentence": "{subject}的后果已经扩展到群体、制度或下一代。",
+      "sunward": "成果能够被共享、继承并长期延续",
+      "unanchored": "个人被集体使命、制度或遗产吞没"
+    }
+  },
+  "states": {
+    "sunward": {
+      "id": "sunward",
+      "nameZh": "见日态",
+      "orientation": "upright",
+      "definition": "这股力量与现实保持连接，正在发挥其必要功能。",
+      "functionPrompt": "它正在帮助你维持什么？",
+      "riskPrompt": "这种有效性要求你依赖或忽略什么？"
+    },
+    "unanchored": {
+      "id": "unanchored",
+      "nameZh": "失锚态",
+      "orientation": "reversed",
+      "definition": "这股力量已经偏离承载条件，其代价、裂缝或被压抑部分正在显现。",
+      "functionPrompt": "原有功能在哪里开始失效？",
+      "riskPrompt": "什么代价已经无法继续被遮蔽？"
+    }
+  },
+  "cardFamilies": {
+    "major": {
+      "nameZh": "大阿卡纳",
+      "count": 22,
+      "meaning": "塑造太阳文明的关键结构、制度转折与集体命题。",
+      "generator": "原型 × 状态",
+      "readingPriority": "先读这张牌揭示的文明结构，再把它映射到求问者当前处境；不得套用数字牌成长规律。"
+    },
+    "minorNumber": {
+      "nameZh": "小阿卡纳数字牌",
+      "count": 40,
+      "meaning": "普通人在太阳现实中的日常过程与结果。",
+      "generator": "牌组 × 数字阶段 × 状态"
+    },
+    "court": {
+      "nameZh": "人物牌",
+      "count": 16,
+      "meaning": "人如何接触、推动、承载或治理某种力量。",
+      "generator": "牌组 × 系统角色 × 状态",
+      "readingPriority": "人物牌首先表示一种行为位置或关系模式；只有牌阵与问题明确指向具体人物时，才解释为某个人。"
+    }
+  },
+  "majorArcanaGrammar": {
+    "coreQuestion": "哪一种比个人更大的结构正在塑造这件事？",
+    "numberRule": "编号表达概念关系与制度演化，不表示力量大小、成熟度，也不是同一主角的连续冒险。",
+    "stateRule": "见日态读取结构仍在发挥的必要功能，并追问其代价；失锚态读取结构偏离现实后暴露的控制、裂缝或反作用。",
+    "phases": [
+      { "id": "centerFormation", "range": "0–IV", "nameZh": "中心成形", "meaning": "从无锚感知、命名与孕育，直到中心秩序建立。" },
+      { "id": "socialEmbedding", "range": "V–IX", "nameZh": "社会嵌入", "meaning": "太阳进入信仰、关系、意志、情绪与个人求证。" },
+      { "id": "systemOperation", "range": "X–XIV", "nameZh": "系统运转", "meaning": "周期、裁决、牺牲、终止与重新分布揭示制度如何维持和改变。" },
+      { "id": "dependencyFailure", "range": "XV–XVIII", "nameZh": "依赖与故障", "meaning": "依赖、崩塌、残像与盲区暴露共同现实的不稳定。" },
+      { "id": "reconstruction", "range": "XIX–XXI", "nameZh": "显影与重建", "meaning": "共同幻象被看见，人开始承担知情责任，并尝试无中心地共同生活。" }
+    ]
+  },
+  "majorArcana": [
+    {
+      "number": 0,
+      "numeral": "0",
+      "id": "the-unanchored",
+      "nameZh": "失锚者",
+      "nameEn": "The Unanchored",
+      "phase": "centerFormation",
+      "archetype": "从未被赠予太阳的人。",
+      "image": "少年走在所有人投向天空的目光之间，头顶只有空白。",
+      "sunward": "不受既定叙事束缚、未知旅程、原初感知。",
+      "unanchored": "被孤立、因不同而自毁、把不相信误作优越。",
+      "coreQuestion": "当既定中心消失时，你愿意凭什么开始？"
+    },
+    {
+      "number": 1,
+      "numeral": "I",
+      "id": "the-sunwright",
+      "nameZh": "造日者",
+      "nameEn": "The Sunwright",
+      "phase": "centerFormation",
+      "archetype": "把分散现象压缩成一个中心解释的人。",
+      "image": "桌上陈列光、热、时间与情绪四种装置，造日者将它们接入同一日轮。",
+      "sunward": "命名、整合、创造现实、使混乱可用。",
+      "unanchored": "操纵证据、制造权威、把解释伪装成事实。",
+      "coreQuestion": "你正在整合现实，还是制造一个不可质疑的解释？"
+    },
+    {
+      "number": 2,
+      "numeral": "II",
+      "id": "the-silent-protocol",
+      "nameZh": "静默协议",
+      "nameEn": "The Silent Protocol",
+      "phase": "centerFormation",
+      "archetype": "知道系统存在，却不直接说出真相的守门人。",
+      "image": "蒙眼女性坐在两根神经柱之间，膝上放着未公开的 SVAP 原本。",
+      "sunward": "隐秘知识、直觉、等待、理解不可言说之物。",
+      "unanchored": "制度性沉默、信息封锁、以保护之名剥夺知情权。",
+      "coreQuestion": "沉默正在保护什么，又剥夺了谁的知情权？"
+    },
+    {
+      "number": 3,
+      "numeral": "III",
+      "id": "the-womb-of-light",
+      "nameZh": "母体",
+      "nameEn": "The Womb of Light",
+      "phase": "centerFormation",
+      "archetype": "将太阳写入下一代身体的文明母体。",
+      "image": "培养舱旁显示视觉发育、预测权重和情绪联结参数；金色圆盘只出现在监护人的观看界面中。",
+      "sunward": "孕育、丰盛、保护、让意义得以继承。",
+      "unanchored": "未经同意的塑造、以爱之名编程、无法选择的遗产。",
+      "coreQuestion": "你在孕育未来，还是替未来决定它必须成为谁？"
+    },
+    {
+      "number": 4,
+      "numeral": "IV",
+      "id": "the-corona",
+      "nameZh": "日冕",
+      "nameEn": "The Corona",
+      "phase": "centerFormation",
+      "archetype": "以太阳为中心建立秩序的统治结构。",
+      "image": "空王座背后悬着一圈人造日冕。",
+      "sunward": "边界、责任、制度、稳定的中心。",
+      "unanchored": "中心崇拜、僵化权力、为了秩序牺牲个体。",
+      "coreQuestion": "这个中心在承担责任，还是要求所有人围绕它存在？"
+    },
+    {
+      "number": 5,
+      "numeral": "V",
+      "id": "the-solar-church",
+      "nameZh": "太阳教",
+      "nameEn": "The Solar Church",
+      "phase": "socialEmbedding",
+      "archetype": "把技术、信仰与常识结合为同一种真理。",
+      "image": "祭司一手持经文，一手持神经接口。",
+      "sunward": "传统、共同语言、传承、群体意义。",
+      "unanchored": "教条、知识垄断、把服从定义为健康。",
+      "coreQuestion": "共同语言在连接人，还是在禁止别的理解？"
+    },
+    {
+      "number": 6,
+      "numeral": "VI",
+      "id": "the-twin-horizon",
+      "nameZh": "双重视界",
+      "nameEn": "The Twin Horizon",
+      "phase": "socialEmbedding",
+      "archetype": "两个人看见同一片天空，却不能确认彼此看见的是不是同一个世界。",
+      "image": "一人看见金色日轮，一人看见空白天顶，两人的手仍然相触。",
+      "sunward": "关系中的选择、跨越认知差异、共同定义真实。",
+      "unanchored": "以一致代替亲密、感知不对称、爱中的思想改造。",
+      "coreQuestion": "你们能否在看见不同世界时仍然彼此相认？"
+    },
+    {
+      "number": 7,
+      "numeral": "VII",
+      "id": "the-synchronizer",
+      "nameZh": "同步车",
+      "nameEn": "The Synchronizer",
+      "phase": "socialEmbedding",
+      "archetype": "依靠强大意志保持多个系统一致。",
+      "image": "驾驶者驾驭两台朝相反方向偏移的校准装置。",
+      "sunward": "控制、推进、协调矛盾、共同目标。",
+      "unanchored": "强制同步、失控、只剩方向而忘记为何出发。",
+      "coreQuestion": "你在协调差异，还是强迫一切服从同一方向？"
+    },
+    {
+      "number": 8,
+      "numeral": "VIII",
+      "id": "strength",
+      "nameZh": "驯光",
+      "nameEn": "Strength",
+      "phase": "socialEmbedding",
+      "archetype": "不摧毁幻象，也不向幻象屈服。",
+      "image": "人物徒手捧住灼热的神经光球，使它逐渐冷却。",
+      "sunward": "温柔的自制、承受复杂真相、与恐惧共处。",
+      "unanchored": "压抑怀疑、情绪过载、把麻木误认为坚强。",
+      "coreQuestion": "你是在温柔地承受复杂，还是把感受压成麻木？"
+    },
+    {
+      "number": 9,
+      "numeral": "IX",
+      "id": "the-night-voyager",
+      "nameZh": "夜航者",
+      "nameEn": "The Night Voyager",
+      "phase": "socialEmbedding",
+      "archetype": "主动离开共同光源，寻找无需太阳也能前行的方法。",
+      "image": "独行者提着微弱的人体散热灯，身后没有影子。",
+      "sunward": "独处、求证、内在导航、拒绝廉价答案。",
+      "unanchored": "封闭、认知孤岛、因害怕被同化而拒绝连接。",
+      "coreQuestion": "独处在帮助你求证，还是把你变成一座孤岛？"
+    },
+    {
+      "number": 10,
+      "numeral": "X",
+      "id": "the-calibration-wheel",
+      "nameZh": "校准轮",
+      "nameEn": "The Calibration Wheel",
+      "phase": "systemOperation",
+      "archetype": "不断修正人群感知的自动系统。",
+      "image": "巨轮周围是出生、同步、偏移、重置四个阶段。",
+      "sunward": "周期、系统变化、个人无法独占的时机。",
+      "unanchored": "重复故障、被算法推回原位、宿命感。",
+      "coreQuestion": "你面对的是可参与的周期，还是把人推回原位的循环？"
+    },
+    {
+      "number": 11,
+      "numeral": "XI",
+      "id": "consensus",
+      "nameZh": "共识裁决",
+      "nameEn": "Consensus",
+      "phase": "systemOperation",
+      "archetype": "社会以多数人看见为证据判断真实。",
+      "image": "天平一端是一双眼睛，另一端是千万人的同一份证词。",
+      "sunward": "责任、公共判断、规则的一致适用。",
+      "unanchored": "多数暴力、程序正确掩盖伦理错误、以正常之名定罪。",
+      "coreQuestion": "程序的一致，是否真的产生了公正？"
+    },
+    {
+      "number": 12,
+      "numeral": "XII",
+      "id": "the-suspended-calibrator",
+      "nameZh": "倒悬校准体",
+      "nameEn": "The Suspended Calibrator",
+      "phase": "systemOperation",
+      "archetype": "以自身持续承受系统负荷，使所有人看见稳定太阳的人。",
+      "image": "校准体被医疗支架倒悬固定；同步环形成官方图像中的金色光晕，腕部界面却显示极高的退出依赖指数。",
+      "sunward": "暂停、换位观看、理解维持共同现实的真实成本；自愿守日是牌面上的官方叙事。",
+      "unanchored": "纸面退出、身份依赖、被神圣化的剥削、无法终止的奉献。",
+      "coreQuestion": "谁在替所有人承受稳定的代价，而且真的能够退出吗？"
+    },
+    {
+      "number": 13,
+      "numeral": "XIII",
+      "id": "death",
+      "nameZh": "日落",
+      "nameEn": "Death",
+      "phase": "systemOperation",
+      "archetype": "不是生命终止，而是一个中心解释失效。",
+      "image": "人群第一次看见太阳熄灭，但真实光线仍从四面八方照来。",
+      "sunward": "范式结束、身份脱落、不可逆的转化。",
+      "unanchored": "拒绝失去旧太阳、延长已死的秩序、害怕无名状态。",
+      "coreQuestion": "什么已经结束，却仍被你要求继续照亮生活？"
+    },
+    {
+      "number": 14,
+      "numeral": "XIV",
+      "id": "temperance",
+      "nameZh": "分布之光",
+      "nameEn": "Temperance",
+      "phase": "systemOperation",
+      "archetype": "不再把全部意义集中在一个中心。",
+      "image": "人物把一束金光分流进无数透明管线，世界反而被均匀照亮。",
+      "sunward": "整合、去中心化、调和真实与可用叙事。",
+      "unanchored": "系统失衡、极端纯粹、无法让多个真相共存。",
+      "coreQuestion": "你能否让多个真实共存，而不再制造新的唯一中心？"
+    },
+    {
+      "number": 15,
+      "numeral": "XV",
+      "id": "the-golden-bond",
+      "nameZh": "金色依赖",
+      "nameEn": "The Golden Bond",
+      "phase": "dependencyFailure",
+      "archetype": "人明知太阳可能是假的，却无法放弃被照亮的感觉。",
+      "image": "两个人以金色视神经连接在日轮底座上，锁链由他们自己握住。",
+      "sunward": "欲望、依附、权力交换、被隐藏的需要。",
+      "unanchored": "识别依赖、戒断共同幻觉、把自由浪漫化。",
+      "coreQuestion": "你真正舍不得的是对象本身，还是被它照亮的感觉？"
+    },
+    {
+      "number": 16,
+      "numeral": "XVI",
+      "id": "the-twin-suns",
+      "nameZh": "双日故障",
+      "nameEn": "The Twin Suns",
+      "phase": "dependencyFailure",
+      "archetype": "锚点溢出后，天空同时出现两个互相矛盾的太阳。",
+      "image": "人群惊见双日，公共界面发生圆盘分裂；真实仪器却没有记录两个光源。",
+      "sunward": "系统性崩塌、真相强行闯入、旧解释无法修补。",
+      "unanchored": "否认故障、秘密坍塌、灾难已发生但尚未被承认。",
+      "coreQuestion": "哪一道故障已经证明旧解释无法继续修补？"
+    },
+    {
+      "number": 17,
+      "numeral": "XVII",
+      "id": "the-afterglow",
+      "nameZh": "余辉",
+      "nameEn": "The Afterglow",
+      "phase": "dependencyFailure",
+      "archetype": "太阳消失后仍留在视网膜上的光。",
+      "image": "人物在无日天空下取水，眼中保留微弱残像。",
+      "sunward": "恢复、微小希望、不依赖宏大中心的信任。",
+      "unanchored": "沉迷残像、把创伤后的幻觉当成启示、希望枯竭。",
+      "coreQuestion": "留下来的光能否支持恢复，而不是让你沉迷过去？"
+    },
+    {
+      "number": 18,
+      "numeral": "XVIII",
+      "id": "the-blind-field",
+      "nameZh": "盲区",
+      "nameEn": "The Blind Field",
+      "phase": "dependencyFailure",
+      "archetype": "系统无法解释、意识又会自动补全的区域。",
+      "image": "两座塔之间没有月亮，只有一片被大脑填充的银色空洞。",
+      "sunward": "潜意识、暧昧、感知不可靠、尚不能命名之物。",
+      "unanchored": "疑云消散，或更深地陷入自我制造的证据。",
+      "coreQuestion": "哪些内容来自现实，哪些是你为了填补空白而生成的？"
+    },
+    {
+      "number": 19,
+      "numeral": "XIX",
+      "id": "the-fake-sun",
+      "nameZh": "伪日",
+      "nameEn": "The Fake Sun",
+      "phase": "reconstruction",
+      "archetype": "一场被所有人共同看见、并确实带来温暖的幻象。",
+      "image": "孩子们在真实高亮场中玩耍；共同视线围出留白日轮，公共终端显示标准渲染，维护警报提示校准体损伤。",
+      "sunward": "生命力、共享喜悦、成功、一个有效的共同神话。",
+      "unanchored": "幸福的隐性代价、强迫乐观、光明叙事遮蔽受害者。",
+      "coreQuestion": "这份真实的温暖由什么幻象和谁的代价维持？"
+    },
+    {
+      "number": 20,
+      "numeral": "XX",
+      "id": "the-wake-signal",
+      "nameZh": "唤醒协议",
+      "nameEn": "The Wake Signal",
+      "phase": "reconstruction",
+      "archetype": "让人意识到自己正在参与生成现实的信号。",
+      "image": "公共日出仪式中，一小群人第一次不再寻找圆盘，而是看向彼此并交换原始影像。",
+      "sunward": "觉醒、重新审视、承担知情后的责任。",
+      "unanchored": "拒绝醒来、道德优越式觉醒、知道真相却不改变关系。",
+      "coreQuestion": "知道真相以后，你愿意改变什么具体关系与责任？"
+    },
+    {
+      "number": 21,
+      "numeral": "XXI",
+      "id": "the-centerless-world",
+      "nameZh": "无中心世界",
+      "nameEn": "The Centerless World",
+      "phase": "reconstruction",
+      "archetype": "文明不再依靠唯一中心，却仍能共同生活。",
+      "image": "无圆盘天空下，不同社区使用不完全兼容的时间界面；协商桌保留开放圆环，背景仍有噪声和需要照护的失调者。",
+      "sunward": "分布式秩序、容许差异、共同承担协商成本、没有终极完成的成熟。",
+      "unanchored": "解构之后无力重建、地区现实彼此封闭、把分裂浪漫化。",
+      "coreQuestion": "没有唯一中心以后，你愿意承担怎样的协商成本？"
+    }
+  ],
+  "courtRanks": {
+    "messenger": {
+      "order": 1,
+      "nameZh": "信使",
+      "nameEn": "Messenger",
+      "traditional": "侍从",
+      "systemRole": "接触",
+      "plainMeaning": "刚刚接触这种力量，带来消息、好奇与未成熟的可能。",
+      "roleSentence": "当事人正在学习辨认并表达{force}。",
+      "sunward": "保持好奇，允许新信号出现，并愿意从尚不成熟的经验中学习",
+      "unanchored": "把新鲜感当成理解，以未经检验的消息或冲动替代真正学习",
+      "coreQuestion": "什么新信号值得学习，而不是立刻下结论？"
+    },
+    "voyager": {
+      "order": 2,
+      "nameZh": "夜航者",
+      "nameEn": "Voyager",
+      "traditional": "骑士",
+      "systemRole": "推动",
+      "plainMeaning": "让这种力量移动、扩张并进入行动，也可能使它失控。",
+      "roleSentence": "当事人正在推动{force}进入现实并向外扩张。",
+      "sunward": "把力量转化为明确行动，使停滞的局面开始移动",
+      "unanchored": "被速度、使命或追逐感裹挟，让行动超过现实承载能力",
+      "coreQuestion": "你在把什么推向前方，又可能因此越过什么边界？"
+    },
+    "calibrator": {
+      "order": 3,
+      "nameZh": "校准者",
+      "nameEn": "Calibrator",
+      "traditional": "皇后",
+      "systemRole": "承载",
+      "plainMeaning": "承载、调节并照料这种力量，使它能够持续。",
+      "roleSentence": "当事人正在承载、调节并照料{force}。",
+      "sunward": "让力量得到容纳、修复和持续生长，同时保持必要边界",
+      "unanchored": "吸收过多负荷，以照料之名控制，或把自我耗损误作承载能力",
+      "coreQuestion": "怎样让它持续，而不让承载者被它耗尽？"
+    },
+    "sunbearer": {
+      "order": 4,
+      "nameZh": "执日者",
+      "nameEn": "Sunbearer",
+      "traditional": "国王",
+      "systemRole": "治理",
+      "plainMeaning": "决定这种力量如何成为公共方向、边界与秩序。",
+      "roleSentence": "当事人正在决定{force}如何进入公共秩序。",
+      "sunward": "承担决策与分配责任，让权力接受现实检验和他人质疑",
+      "unanchored": "把个人判断变成唯一标准，以秩序和责任之名垄断解释权",
+      "coreQuestion": "谁有权制定规则，又由谁承担规则的后果？"
+    }
+  },
+  "courtCards": {
+    "fragments": [
+      { "role": "messenger", "nameZh": "光像信使", "specific": "第一次提出足以感染他人的愿景。" },
+      { "role": "voyager", "nameZh": "光像夜航者", "specific": "为信念高速前进。" },
+      { "role": "calibrator", "nameZh": "光像校准者", "specific": "让创造力能够孕育他人。" },
+      { "role": "sunbearer", "nameZh": "光像执日者", "specific": "把愿景转化为方向与制度。" }
+    ],
+    "rings": [
+      { "role": "messenger", "nameZh": "同步信使", "specific": "敏感地捕捉关系中的情绪信号。" },
+      { "role": "voyager", "nameZh": "同步夜航者", "specific": "追逐理想关系与情感融合。" },
+      { "role": "calibrator", "nameZh": "同步校准者", "specific": "容纳情感，但容易吸收过多噪声。" },
+      { "role": "sunbearer", "nameZh": "同步执日者", "specific": "稳定群体情绪与关系边界。" }
+    ],
+    "rifts": [
+      { "role": "messenger", "nameZh": "裂隙信使", "specific": "提出那个所有人都不愿回答的问题。" },
+      { "role": "voyager", "nameZh": "裂隙夜航者", "specific": "以真相为武器冲破系统。" },
+      { "role": "calibrator", "nameZh": "裂隙校准者", "specific": "清醒判断，不用残酷证明理性。" },
+      { "role": "sunbearer", "nameZh": "裂隙执日者", "specific": "建立可质疑、可修正的真理规则。" }
+    ],
+    "vessels": [
+      { "role": "messenger", "nameZh": "载体信使", "specific": "学习照顾身体、资源与现实后果。" },
+      { "role": "voyager", "nameZh": "载体夜航者", "specific": "缓慢、可靠地建设替代基础。" },
+      { "role": "calibrator", "nameZh": "载体校准者", "specific": "照料身体、土地与可持续资源。" },
+      { "role": "sunbearer", "nameZh": "载体执日者", "specific": "管理资源，也承担分配责任。" }
+    ]
+  },
+  "cards": {
+    "fragments": [
+      { "rank": "ace", "nameZh": "火种", "specific": "一个足以组织现实的新意象。" },
+      { "rank": "two", "nameZh": "两种天空", "specific": "在不同未来之间选择。" },
+      { "rank": "three", "nameZh": "远距投影", "specific": "信念开始扩散，等待回应。" },
+      { "rank": "four", "nameZh": "共同黎明", "specific": "群体庆祝一个共享叙事。" },
+      { "rank": "five", "nameZh": "争光", "specific": "多个中心竞争解释权。" },
+      { "rank": "six", "nameZh": "被承认的太阳", "specific": "个人叙事获得公共确认。" },
+      { "rank": "seven", "nameZh": "守住天顶", "specific": "抵抗他人对自身现实的改写。" },
+      { "rank": "eight", "nameZh": "光速传播", "specific": "消息与感染迅速形成行动共识。" },
+      { "rank": "nine", "nameZh": "灼伤之后", "specific": "仍保持信念，但已经付出代价。" },
+      { "rank": "ten", "nameZh": "负日者", "specific": "背负整个群体的希望而耗尽。" }
+    ],
+    "rings": [
+      { "rank": "ace", "nameZh": "初次共感", "specific": "情感通路开启。" },
+      { "rank": "two", "nameZh": "双人校准", "specific": "彼此确认并建立亲密同步。" },
+      { "rank": "three", "nameZh": "同步宴席", "specific": "群体共鸣与庆祝。" },
+      { "rank": "four", "nameZh": "拒绝接入", "specific": "厌倦现有的连接方式。" },
+      { "rank": "five", "nameZh": "断环", "specific": "失去关系后只看见缺口。" },
+      { "rank": "six", "nameZh": "旧日残像", "specific": "怀旧与童年植入的太阳。" },
+      { "rank": "seven", "nameZh": "七重投影", "specific": "把欲望误认成预兆。" },
+      { "rank": "eight", "nameZh": "主动脱网", "specific": "离开仍然有感情的共同现实。" },
+      { "rank": "nine", "nameZh": "完满模拟", "specific": "愿望实现，但仍需辨认其真实性。" },
+      { "rank": "ten", "nameZh": "万众同日", "specific": "深度归属，也可能成为完美同化。" }
+    ],
+    "rifts": [
+      { "rank": "ace", "nameZh": "第一道裂缝", "specific": "清晰洞见切开既有解释。" },
+      { "rank": "two", "nameZh": "遮眼选择", "specific": "维持平衡而暂不面对证据。" },
+      { "rank": "three", "nameZh": "三重证词", "specific": "真相、关系与自我认知互相刺穿。" },
+      { "rank": "four", "nameZh": "静默维护", "specific": "暂停输入，让心智恢复。" },
+      { "rank": "five", "nameZh": "赢得解释权", "specific": "胜利伴随信任损失。" },
+      { "rank": "six", "nameZh": "越过盲区", "specific": "离开旧的认知环境。" },
+      { "rank": "seven", "nameZh": "伪造记录", "specific": "在隐瞒、策略与带走证据之间选择。" },
+      { "rank": "eight", "nameZh": "认知闭环", "specific": "以为无路可走，其实限制已经内化。" },
+      { "rank": "nine", "nameZh": "夜间校准", "specific": "焦虑并反复怀疑自己的感知。" },
+      { "rank": "ten", "nameZh": "协议终止", "specific": "一个谎言体系彻底穿透个体。" }
+    ],
+    "vessels": [
+      { "rank": "ace", "nameZh": "真实热源", "specific": "可触摸的资源与新基础。" },
+      { "rank": "two", "nameZh": "负载平衡", "specific": "在多个现实需求之间调配能量。" },
+      { "rank": "three", "nameZh": "共同建造", "specific": "专业协作与基础设施开始成形。" },
+      { "rank": "four", "nameZh": "封存能源", "specific": "安全感、占有与拒绝流动。" },
+      { "rank": "five", "nameZh": "无光区", "specific": "网络覆盖不足使太阳锚点不稳，居民被制度判定为同步风险人口。" },
+      { "rank": "six", "nameZh": "配给", "specific": "给予、控制与不对称资源关系。" },
+      { "rank": "seven", "nameZh": "长期培育", "specific": "等待系统产生真实回报。" },
+      { "rank": "eight", "nameZh": "校准劳动", "specific": "重复练习、技术与看不见的维护。" },
+      { "rank": "nine", "nameZh": "自持光源", "specific": "独立、身体自主与无需中心的丰盛。" },
+      { "rank": "ten", "nameZh": "代际协议", "specific": "遗产、基因与制度跨代延续。" }
+    ]
+  },
+  "templates": {
+    "summary": "“{cardName}”属于{suiteName}，把问题带到{domain}的层面。该卡牌位于“{stageZh}”阶段：{plainMeaning}。",
+    "development": "当前，{stageSentence}",
+    "state": "在{stateName}中，{rankStateMeaning}。{stateDefinition}",
+    "specific": "这张牌的专属叙事是：{specific}",
+    "question": "解读时可以继续追问：{rankQuestion}",
+    "full": "{summary} {development} {state} {specific} {question}",
+    "legacyNote": "以上六个顶层模板为 1.0 兼容字段；新代码应按 cardFamilies 选择 minorNumber、court 或 major。",
+    "minorNumber": {
+      "summary": "“{cardName}”属于{suitName}，把问题带到{domain}的层面。该卡牌位于“{stageZh}”阶段：{plainMeaning}。",
+      "development": "当前，{stageSentence}",
+      "state": "在{stateName}中，{rankStateMeaning}。{stateDefinition}",
+      "specific": "这张牌的专属叙事是：{specific}",
+      "question": "解读时可以继续追问：{rankQuestion}",
+      "full": "{summary} {development} {state} {specific} {question}"
+    },
+    "court": {
+      "summary": "“{cardName}”属于{suitName}的人物牌，把问题带到{domain}的层面。{roleName}代表“{systemRole}”：{rolePlainMeaning}",
+      "position": "当前，{roleSentence}",
+      "state": "在{stateName}中，这种角色会{roleStateMeaning}。{stateDefinition}",
+      "specific": "这张牌在该牌组中的具体表现是：{specific}",
+      "question": "解读时可以继续追问：{roleQuestion}",
+      "full": "{summary} {position} {state} {specific} {question}"
+    },
+    "major": {
+      "summary": "{numeral}｜“{cardName}”是一张大阿卡纳，揭示正在塑造这件事的文明结构：{archetype}",
+      "phase": "它位于“{phaseName}”阶段：{phaseMeaning}",
+      "state": "在{stateName}中，它表现为：{majorStateMeaning}。{stateDefinition}",
+      "question": "解读时可以继续追问：{majorQuestion}",
+      "full": "{summary} {phase} {state} {question}"
+    }
+  },
+  "compositionRules": {
+    "familyRouting": "先按 cardFamilies 判断卡牌类型：major 读取 majorArcana；minorNumber 读取 suits、ranks 与 cards；court 读取 suits、courtRanks 与 courtCards。",
+    "subjectReplacement": "用 suits[suit].subject 替换 ranks[rank].stageSentence 中的 {subject}。",
+    "rankStateLookup": "状态为 sunward 时读取 ranks[rank].sunward；状态为 unanchored 时读取 ranks[rank].unanchored。",
+    "cardLookup": "在 cards[suit] 中按 rank 查找具体牌名与专属叙事。",
+    "courtForceReplacement": "用 suits[suit].domain 替换 courtRanks[role].roleSentence 中的 {force}。",
+    "courtStateLookup": "状态为 sunward 时读取 courtRanks[role].sunward；状态为 unanchored 时读取 courtRanks[role].unanchored。",
+    "courtCardLookup": "在 courtCards[suit] 中按 role 查找人物牌名与专属叙事。",
+    "majorStateLookup": "按 number 或 id 查找 majorArcana；状态为 sunward 时读取该牌 sunward，状态为 unanchored 时读取该牌 unanchored。",
+    "majorPhaseLookup": "用 majorArcana.phase 在 majorArcanaGrammar.phases 中查找阶段说明。",
+    "doNotInfer": [
+      "不要把见日态自动解释为好结果。",
+      "不要把失锚态自动解释为坏结果。",
+      "不要把数字大小解释为力量强弱或成熟度高低。",
+      "不要让基础生成句覆盖具体牌的世界观叙事。",
+      "不要把大阿卡纳编号套入 Ace–Ten 的数字成长规律。",
+      "不要默认人物牌必然指向某个具体人物，也不要按年龄或性别解释人物牌。",
+      "大阿卡纳出现时，不要把个人选择夸大成不可改变的宿命；它指向结构影响，不取消人的行动空间。"
+    ]
+  },
+  "examples": [
+    {
+      "input": { "suit": "rings", "rank": "eight", "state": "sunward" },
+      "output": "主动脱网属于同步组，把问题带到情感、关系、归属与共识的层面。数字8代表“自运行”：模式获得惯性，开始推动或困住人。当前，一段连接或共同感受已经形成惯性，开始反过来推动或限制当事人。在见日态中，模式形成效率、持续动力与明确行动。这股力量与现实保持连接，正在发挥其必要功能。这张牌的专属叙事是：离开仍然有感情的共同现实。解读时可以继续追问：什么已经停不下来了？"
+    },
+    {
+      "input": { "suit": "rifts", "rank": "eight", "state": "unanchored" },
+      "output": "认知闭环属于裂隙组，把问题带到思考、证据、冲突、语言与真相的层面。数字8代表“自运行”：模式获得惯性，开始推动或困住人。当前，一种判断或原有解释已经形成惯性，开始反过来推动或限制当事人。在失锚态中，模式失控，人被惯性或闭环推动。这股力量已经偏离承载条件，其代价、裂缝或被压抑部分正在显现。这张牌的专属叙事是：以为无路可走，其实限制已经内化。解读时可以继续追问：什么已经停不下来了？"
+    },
+    {
+      "input": { "suit": "vessels", "rank": "five", "state": "sunward" },
+      "output": "无光区属于载体组，把问题带到身体、资源、劳动与现实条件的层面。数字5代表“扰动”：原有结构容纳不了现实，矛盾暴露。当前，一项资源或现实基础与现实发生失配，原有结构中的矛盾正在暴露。在见日态中，矛盾被看见，使修正成为可能。这股力量与现实保持连接，正在发挥其必要功能。这张牌的专属叙事是：网络覆盖不足使太阳锚点不稳，居民被制度判定为同步风险人口。解读时可以继续追问：哪里对不上了？"
+    },
+    {
+      "input": { "family": "court", "suit": "rifts", "role": "calibrator", "state": "sunward" },
+      "output": "裂隙校准者属于裂隙组的人物牌，把问题带到思考、证据、冲突、语言与真相的层面。校准者代表“承载”：承载、调节并照料这种力量，使它能够持续。当前，当事人正在承载、调节并照料思考、证据、冲突、语言与真相。在见日态中，这种角色会让力量得到容纳、修复和持续生长，同时保持必要边界。这张牌在该牌组中的具体表现是：清醒判断，不用残酷证明理性。解读时可以继续追问：怎样让它持续，而不让承载者被它耗尽？"
+    },
+    {
+      "input": { "family": "major", "number": 19, "state": "unanchored" },
+      "output": "XIX｜伪日是一张大阿卡纳，揭示正在塑造这件事的文明结构：一场被所有人共同看见、并确实带来温暖的幻象。它位于“显影与重建”阶段：共同幻象被看见，人开始承担知情责任，并尝试无中心地共同生活。在失锚态中，它表现为：幸福的隐性代价、强迫乐观、光明叙事遮蔽受害者。这股力量已经偏离承载条件，其代价、裂缝或被压抑部分正在显现。解读时可以继续追问：这份真实的温暖由什么幻象和谁的代价维持？"
+    }
+  ]
+}
